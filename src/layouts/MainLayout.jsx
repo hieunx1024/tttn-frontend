@@ -1,0 +1,46 @@
+import { Outlet, useLocation } from 'react-router-dom';
+import Header from '../components/Header';
+import Footer from '../components/Footer';
+import useRoleRedirect from '../hooks/useRoleRedirect';
+import { useAuth } from '../context/AuthContext';
+
+const MainLayout = () => {
+    // We use the hook for side-effect redirect, but we also need local check to prevent rendering
+    useRoleRedirect();
+    const { isLoading, isAuthenticated, user } = useAuth();
+
+    // Show loader while checking auth state
+    if (isLoading) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-secondary-50">
+                <div className="w-16 h-16 border-4 border-brand-200 border-t-brand-600 rounded-full animate-spin"></div>
+            </div>
+        );
+    }
+
+    // Role check logic matching useRoleRedirect
+    const shouldRedirectToRoleSelection = isAuthenticated && (!user?.role || user?.role?.name === 'USER');
+
+    if (shouldRedirectToRoleSelection) {
+        // Return null or a loader while the useRoleRedirect hook pushes them away
+        return null;
+    }
+
+    return (
+        <div className="min-h-screen flex flex-col bg-secondary-50 font-sans text-secondary-900 overflow-x-hidden selection:bg-brand-500/30 selection:text-brand-900">
+            <Header />
+            <main className="flex-grow w-full">
+                <Outlet />
+            </main>
+            <Footer />
+
+            {/* Ambient Background Gradient for subtle effect */}
+            <div className="fixed top-0 left-0 w-full h-full pointer-events-none -z-10 opacity-40">
+                <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-brand-100 rounded-full blur-[128px] transform translate-x-1/3 -translate-y-1/3" />
+                <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-accent-100 rounded-full blur-[128px] transform -translate-x-1/3 translate-y-1/3" />
+            </div>
+        </div>
+    );
+};
+
+export default MainLayout;

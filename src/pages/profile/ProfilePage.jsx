@@ -1,0 +1,250 @@
+import React, { useState, useEffect } from 'react';
+import { useAuth } from '../../context/AuthContext';
+import { useForm } from 'react-hook-form';
+import * as yup from 'yup';
+import { yupResolver } from '@hookform/resolvers/yup';
+import { toast } from 'react-toastify';
+import axiosClient from '../../api/axiosClient';
+import { ENDPOINTS } from '../../api/endpoints';
+
+const schema = yup.object().shape({
+    name: yup.string().required('Tên hiển thị không được để trống'),
+    age: yup.number().typeError('Tuổi phải là số').required('Tuổi không được để trống').min(18, 'Phải trên 18 tuổi').max(100, 'Tuổi không hợp lệ'),
+    gender: yup.string().required('Vui lòng chọn giới tính'),
+    address: yup.string().required('Địa chỉ không được để trống'),
+});
+
+const passwordSchema = yup.object().shape({
+    currentPassword: yup.string().required('Mật khẩu hiện tại là bắt buộc'),
+    newPassword: yup.string().required('Mật khẩu mới là bắt buộc').min(6, 'Mật khẩu phải có ít nhất 6 ký tự'),
+    confirmPassword: yup.string()
+        .oneOf([yup.ref('newPassword'), null], 'Mật khẩu xác nhận không khớp')
+        .required('Xác nhận mật khẩu là bắt buộc'),
+});
+
+const ProfilePage = () => {
+    const { user, fetchAccount } = useAuth();
+    const [activeTab, setActiveTab] = useState('info');
+    const [loading, setLoading] = useState(false);
+
+    const { register, handleSubmit, setValue, formState: { errors } } = useForm({
+        resolver: yupResolver(schema),
+    });
+
+    const {
+        register: registerPassword,
+        handleSubmit: handleSubmitPassword,
+        formState: { errors: passwordErrors },
+        reset: resetPasswordForm
+    } = useForm({
+        resolver: yupResolver(passwordSchema),
+    });
+
+    useEffect(() => {
+        if (user) {
+            setValue('name', user.name);
+            setValue('age', user.age);
+            setValue('gender', user.gender); // Ensure gender matches user data (MALE/FEMALE)
+            setValue('address', user.address);
+        }
+    }, [user, setValue]);
+
+    const onSubmitInfo = async (data) => {
+        setLoading(true);
+        try {
+            await axiosClient.put(ENDPOINTS.USERS.BASE, {
+                id: user.id, // Include ID just in case
+                ...data
+            });
+            toast.success('Cập nhật thông tin thành công!');
+            await fetchAccount(); // Refresh user data
+        } catch (error) {
+            console.error(error);
+            toast.error(error.response?.data?.message || 'Có lỗi xảy ra khi cập nhật thông tin');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const onSubmitPassword = async (data) => {
+        setLoading(true);
+        try {
+            // Need to verify exact endpoint payload structure for change-password
+            // Typically { currentPassword, newPassword } or similar
+            await axiosClient.post(ENDPOINTS.AUTH.CHANGE_PASSWORD, {
+                email: user.email, // backend might need identifier
+                currentPassword: data.currentPassword,
+                newPassword: data.newPassword
+            });
+            toast.success('Đổi mật khẩu thành công!');
+            resetPasswordForm();
+        } catch (error) {
+            console.error(error);
+            toast.error(error.response?.data?.message || 'Đổi mật khẩu thất bại. Kiểm tra lại mật khẩu cũ.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    if (!user) return <div className="p-8 text-center">Đang tải thông tin...</div>;
+
+    return (
+        <div className="container mx-auto px-4 py-8 max-w-4xl">
+            <h1 className="text-3xl font-bold mb-8 text-gray-800">Hồ sơ cá nhân</h1>
+
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                <div className="flex border-b border-gray-100">
+                    <button
+                        className={`flex-1 py-4 text-center font-medium transition-colors ${activeTab === 'info' ? 'text-primary-600 border-b-2 border-primary-600 bg-primary-50/50' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'}`}
+                        onClick={() => setActiveTab('info')}
+                    >
+                        Thông tin chung
+                    </button>
+                    <button
+                        className={`flex-1 py-4 text-center font-medium transition-colors ${activeTab === 'password' ? 'text-primary-600 border-b-2 border-primary-600 bg-primary-50/50' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'}`}
+                        onClick={() => setActiveTab('password')}
+                    >
+                        Đổi mật khẩu
+                    </button>
+                </div>
+
+                <div className="p-8">
+                    {activeTab === 'info' ? (
+                        <form onSubmit={handleSubmit(onSubmitInfo)} className="space-y-6">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                                    <input
+                                        type="text"
+                                        value={user.email}
+                                        disabled
+                                        className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-gray-500 cursor-not-allowed focus:outline-none"
+                                    />
+                                    <p className="mt-1 text-xs text-gray-400">Email không thể thay đổi</p>
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">Vai trò</label>
+                                    <div className="w-full px-4 py-2 bg-indigo-50 border border-indigo-100 rounded-lg text-indigo-700 font-medium">
+                                        {user.role?.name ?? user.role ?? 'N/A'}
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">Họ và tên</label>
+                                    <input
+                                        {...register('name')}
+                                        className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all ${errors.name ? 'border-red-500' : 'border-gray-300'}`}
+                                        placeholder="Nhập tên hiển thị"
+                                    />
+                                    {errors.name && <p className="mt-1 text-sm text-red-500">{errors.name.message}</p>}
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">Tuổi</label>
+                                    <input
+                                        type="number"
+                                        {...register('age')}
+                                        className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all ${errors.age ? 'border-red-500' : 'border-gray-300'}`}
+                                        placeholder="Nhập tuổi"
+                                    />
+                                    {errors.age && <p className="mt-1 text-sm text-red-500">{errors.age.message}</p>}
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">Giới tính</label>
+                                    <select
+                                        {...register('gender')}
+                                        className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all ${errors.gender ? 'border-red-500' : 'border-gray-300'}`}
+                                    >
+                                        <option value="">Chọn giới tính</option>
+                                        <option value="MALE">Nam</option>
+                                        <option value="FEMALE">Nữ</option>
+                                        <option value="OTHER">Khác</option>
+                                    </select>
+                                    {errors.gender && <p className="mt-1 text-sm text-red-500">{errors.gender.message}</p>}
+                                </div>
+
+                                <div className="md:col-span-2">
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">Địa chỉ</label>
+                                    <textarea
+                                        {...register('address')}
+                                        rows="3"
+                                        className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all ${errors.address ? 'border-red-500' : 'border-gray-300'}`}
+                                        placeholder="Nhập địa chỉ của bạn"
+                                    ></textarea>
+                                    {errors.address && <p className="mt-1 text-sm text-red-500">{errors.address.message}</p>}
+                                </div>
+                            </div>
+
+                            <div className="flex justify-end pt-4 border-t border-gray-100">
+                                <button
+                                    type="submit"
+                                    disabled={loading}
+                                    className="px-6 py-2.5 bg-primary-600 text-white rounded-lg hover:bg-primary-700 focus:ring-4 focus:ring-primary-200 font-medium transition-all disabled:opacity-70 disabled:cursor-not-allowed flex items-center"
+                                >
+                                    {loading ? (
+                                        <>
+                                            <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                            </svg>
+                                            Đang lưu...
+                                        </>
+                                    ) : 'Lưu thay đổi'}
+                                </button>
+                            </div>
+                        </form>
+                    ) : (
+                        <form onSubmit={handleSubmitPassword(onSubmitPassword)} className="space-y-6 max-w-lg mx-auto">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">Mật khẩu hiện tại</label>
+                                <input
+                                    type="password"
+                                    {...registerPassword('currentPassword')}
+                                    className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all ${passwordErrors.currentPassword ? 'border-red-500' : 'border-gray-300'}`}
+                                    placeholder="Nhập mật khẩu hiện tại"
+                                />
+                                {passwordErrors.currentPassword && <p className="mt-1 text-sm text-red-500">{passwordErrors.currentPassword.message}</p>}
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">Mật khẩu mới</label>
+                                <input
+                                    type="password"
+                                    {...registerPassword('newPassword')}
+                                    className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all ${passwordErrors.newPassword ? 'border-red-500' : 'border-gray-300'}`}
+                                    placeholder="Nhập mật khẩu mới"
+                                />
+                                {passwordErrors.newPassword && <p className="mt-1 text-sm text-red-500">{passwordErrors.newPassword.message}</p>}
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">Xác nhận mật khẩu mới</label>
+                                <input
+                                    type="password"
+                                    {...registerPassword('confirmPassword')}
+                                    className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all ${passwordErrors.confirmPassword ? 'border-red-500' : 'border-gray-300'}`}
+                                    placeholder="Nhập lại mật khẩu mới"
+                                />
+                                {passwordErrors.confirmPassword && <p className="mt-1 text-sm text-red-500">{passwordErrors.confirmPassword.message}</p>}
+                            </div>
+
+                            <div className="flex justify-end pt-4">
+                                <button
+                                    type="submit"
+                                    disabled={loading}
+                                    className="px-6 py-2.5 bg-green-600 text-white rounded-lg hover:bg-green-700 focus:ring-4 focus:ring-green-200 font-medium transition-all disabled:opacity-70 disabled:cursor-not-allowed flex items-center"
+                                >
+                                    {loading ? 'Đang xử lý...' : 'Đổi mật khẩu'}
+                                </button>
+                            </div>
+                        </form>
+                    )}
+                </div>
+            </div>
+        </div>
+    );
+};
+
+export default ProfilePage;

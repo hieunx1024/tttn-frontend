@@ -1,0 +1,93 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-secondary-50 text-secondary-900 font-sans antialiased;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply font-bold tracking-tight text-secondary-900;
+  }
+
+  /* Smooth scrolling for anchor links */
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+@layer components {
+
+  /* Common Button Styles */
+  .btn {
+    @apply inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors duration-200;
+  }
+
+  .btn-primary {
+    @apply btn bg-brand-600 text-white hover:bg-brand-700 focus:ring-brand-500;
+  }
+
+  .btn-secondary {
+    @apply btn bg-white text-secondary-700 hover:bg-secondary-50 border-secondary-300 focus:ring-brand-500;
+  }
+
+  .btn-accent {
+    @apply btn bg-accent-600 text-white hover:bg-accent-500 focus:ring-accent-500;
+  }
+
+  .btn-outline {
+    @apply btn bg-transparent border-brand-600 text-brand-600 hover:bg-brand-50 focus:ring-brand-500;
+  }
+
+  /* Card Styles */
+  .card {
+    @apply bg-white rounded-xl shadow-sm border border-secondary-200 overflow-hidden transition-shadow duration-300 hover:shadow-md;
+  }
+
+  /* Input Styles */
+  .input-field {
+    @apply block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-500 focus:ring-brand-500 sm:text-sm px-3 py-2;
+  }
+
+  .label-text {
+    @apply block text-sm font-medium text-gray-700 mb-1;
+  }
+
+  /* Custom Ant Design Select Override to match Tailwind theme */
+  .custom-ant-select .ant-select-selector {
+    height: 50px !important;
+    /* Match other inputs */
+    padding-top: 8px !important;
+    padding-bottom: 8px !important;
+    background-color: #f9fafb !important;
+    /* bg-secondary-50 */
+    border-color: #e5e7eb !important;
+    /* border-secondary-200 */
+    border-radius: 0.75rem !important;
+    /* rounded-xl */
+    display: flex;
+    align-items: center;
+  }
+
+  .custom-ant-select:hover .ant-select-selector {
+    border-color: #3b82f6 !important;
+    /* brand-500 (approx) */
+  }
+
+  .custom-ant-select.ant-select-focused .ant-select-selector {
+    border-color: #3b82f6 !important;
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2) !important;
+  }
+
+  .custom-ant-select .ant-select-selection-placeholder {
+    line-height: 32px !important;
+    /* Varies based on padding */
+    margin-left: 10px;
+  }
+}
