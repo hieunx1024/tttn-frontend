@@ -92,23 +92,6 @@ const HRJobManagement = () => {
     };
 
     const handleCreate = () => {
-        if (jobCount >= 2) {
-            Modal.confirm({
-                title: 'Nâng cấp gói dịch vụ',
-                content: (
-                    <div>
-                        <p>Bạn đã sử dụng hết <strong>{jobCount}/2</strong> tin đăng miễn phí.</p>
-                        <p>Vui lòng nâng cấp gói dịch vụ để tiếp tục đăng tin tuyển dụng không giới hạn và tiếp cận nhiều ứng viên hơn.</p>
-                    </div>
-                ),
-                okText: 'Nâng cấp ngay',
-                cancelText: 'Đóng',
-                onOk: () => {
-                    navigate('/hr/pricing');
-                }
-            });
-            return;
-        }
         setEditingJob(null);
         form.resetFields();
         setIsModalOpen(true);
@@ -230,8 +213,8 @@ const HRJobManagement = () => {
             <div className="flex justify-between items-center mb-6">
                 <div className="flex items-center gap-4">
                     <h1 className="text-2xl font-bold">Quản lý Tin tuyển dụng</h1>
-                    <div className={`px-3 py-1 rounded-full text-sm font-medium ${jobCount >= 2 ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-600'}`}>
-                        Đã dùng: {jobCount}/2 tin miễn phí
+                    <div className="px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-600">
+                        Số tin đã đăng: {jobCount}
                     </div>
                 </div>
                 <Button type="primary" icon={<PlusOutlined />} onClick={handleCreate}>
