@@ -38,11 +38,21 @@ const CompanyDetailPage = () => {
 
     return (
         <div>
-            {/* Cover Image Placeholder */}
-            <div className="h-64 bg-gradient-to-r from-blue-600 to-purple-600 rounded-b-3xl -mx-4 sm:-mx-6 lg:-mx-8 mb-12 relative">
-                <button onClick={() => navigate(-1)} className="absolute top-6 left-6 bg-white/20 hover:bg-white/30 text-white p-2 rounded-full backdrop-blur-sm transition">
-                    <ArrowLeft className="w-6 h-6" />
+            {/* Back Navigation */}
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+                <button
+                    onClick={() => navigate(-1)}
+                    className="group flex items-center text-gray-500 hover:text-blue-600 transition-colors font-medium"
+                >
+                    <div className="p-2 rounded-full bg-white border border-gray-200 group-hover:border-blue-300 group-hover:shadow-md mr-3 transition-all">
+                        <ArrowLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />
+                    </div>
+                    Quay lại
                 </button>
+            </div>
+
+            {/* Cover Image */}
+            <div className="h-64 bg-gradient-to-r from-blue-600 to-purple-600 rounded-b-3xl -mx-4 sm:-mx-6 lg:-mx-8 mb-12 relative">
             </div>
 
             <div className="container mx-auto px-4 -mt-24 relative z-10">

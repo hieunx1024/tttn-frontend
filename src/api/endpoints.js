@@ -1,4 +1,4 @@
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080/api/v1';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8080/api/v1';
 
 export const ENDPOINTS = {
     AUTH: {
@@ -24,6 +24,7 @@ export const ENDPOINTS = {
         ALL: `${API_BASE_URL}/jobs/all`, // Public/Unfiltered
         SEARCH: `${API_BASE_URL}/jobs/search`,
         COUNT_BY_COMPANY: `${API_BASE_URL}/jobs/count-by-company`,
+        POSTING_STATS: `${API_BASE_URL}/jobs/posting-stats`,
     },
     SKILLS: {
         BASE: `${API_BASE_URL}/skills`,
@@ -57,5 +58,8 @@ export const ENDPOINTS = {
         BASE: `${API_BASE_URL}/company-registrations`,
         GET_ONE: (id) => `${API_BASE_URL}/company-registrations/${id}`,
         STATUS: (id) => `${API_BASE_URL}/company-registrations/${id}/status`,
+    },
+    DASHBOARD: {
+        ADMIN: `${API_BASE_URL}/dashboard/admin`,
     }
 };

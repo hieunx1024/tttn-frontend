@@ -24,7 +24,6 @@ const CandidateLayout = () => {
     const menuItems = [
         { path: '/candidate', icon: LayoutDashboard, label: 'Dashboard', exact: true },
         { path: '/candidate/applications', icon: FileText, label: 'Ứng tuyển của tôi' },
-        { path: '/candidate/saved-jobs', icon: Bookmark, label: 'Việc làm đã lưu' },
         { path: '/candidate/profile', icon: User, label: 'Hồ sơ cá nhân' },
         { path: '/', icon: Home, label: 'Trang chủ', exact: true },
     ];

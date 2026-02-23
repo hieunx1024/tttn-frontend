@@ -24,11 +24,7 @@ const HRJobManagement = () => {
     const [companies, setCompanies] = useState([]);
     const [skills, setSkills] = useState([]);
 
-    useEffect(() => {
-        fetchJobs();
-        fetchCompanies();
-        fetchSkills();
-    }, [pagination.current, pagination.pageSize]);
+
 
     const fetchJobs = async () => {
         try {
@@ -64,8 +60,8 @@ const HRJobManagement = () => {
 
     const fetchSkills = async () => {
         try {
-            const response = await axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:8080/api/v1'}/skills`, {
-                params: { current: 1, pageSize: 100 }
+            const response = await axios.get(ENDPOINTS.SKILLS.BASE, {
+                params: { page: 1, size: 1000 }
             });
             setSkills(response.data?.data?.result || []);
         } catch (error) {
@@ -73,21 +69,21 @@ const HRJobManagement = () => {
         }
     };
 
-    const [jobCount, setJobCount] = useState(0);
+    const [postingStats, setPostingStats] = useState({ usedPosts: 0, remainingPosts: 0, packageName: 'Free' });
 
     useEffect(() => {
         fetchJobs();
-        fetchJobCount(); // Add fetchJobCount
+        fetchPostingStats();
         fetchCompanies();
         fetchSkills();
     }, [pagination.current, pagination.pageSize]);
 
-    const fetchJobCount = async () => {
+    const fetchPostingStats = async () => {
         try {
-            const response = await axios.get(ENDPOINTS.JOBS.COUNT_BY_COMPANY);
-            setJobCount(response.data?.data || 0);
+            const response = await axios.get(ENDPOINTS.JOBS.POSTING_STATS);
+            setPostingStats(response.data?.data || response.data || { usedPosts: 0, remainingPosts: 0, packageName: 'Free' });
         } catch (error) {
-            console.error('Error fetching job count:', error);
+            console.error('Error fetching posting stats:', error);
         }
     };
 
@@ -119,7 +115,7 @@ const HRJobManagement = () => {
             await axios.delete(`${ENDPOINTS.JOBS.BASE}/${id}`);
             message.success('Xóa công việc thành công');
             fetchJobs();
-            fetchJobCount(); // Update count after delete
+            fetchPostingStats();
         } catch (error) {
             message.error('Không thể xóa công việc');
         }
@@ -145,7 +141,7 @@ const HRJobManagement = () => {
             }
             setIsModalOpen(false);
             fetchJobs();
-            fetchJobCount(); // Update count after create
+            fetchPostingStats();
         } catch (error) {
             // Handle specific backend error for limit exceeded if UI check fails
             if (error.response?.status === 402) { // Assuming 402 for Payment Required
@@ -214,7 +210,18 @@ const HRJobManagement = () => {
                 <div className="flex items-center gap-4">
                     <h1 className="text-2xl font-bold">Quản lý Tin tuyển dụng</h1>
                     <div className="px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-600">
-                        Số tin đã đăng: {jobCount}
+                        Đã đăng: {postingStats.usedPosts}
+                    </div>
+                    <div className={`px-3 py-1 rounded-full text-sm font-medium ${postingStats.remainingPosts === -1
+                        ? 'bg-green-100 text-green-600'
+                        : postingStats.remainingPosts > 0
+                            ? 'bg-green-100 text-green-600'
+                            : 'bg-red-100 text-red-600'
+                        }`}>
+                        Còn lại: {postingStats.remainingPosts === -1 ? 'Không giới hạn' : postingStats.remainingPosts}
+                    </div>
+                    <div className="px-3 py-1 rounded-full text-sm font-medium bg-purple-100 text-purple-600">
+                        Gói: {postingStats.packageName}
                     </div>
                 </div>
                 <Button type="primary" icon={<PlusOutlined />} onClick={handleCreate}>
@@ -225,10 +232,28 @@ const HRJobManagement = () => {
             <AdminTable
                 columns={columns}
                 data={data}
-                loading={loading}
-                pagination={pagination}
-                onPaginationChange={setPagination}
-                actions={actions}
+                isLoading={loading}
+                meta={{
+                    page: pagination.current,
+                    pageSize: pagination.pageSize,
+                    total: pagination.total,
+                    pages: Math.ceil(pagination.total / pagination.pageSize),
+                }}
+                onPageChange={(page) => setPagination(prev => ({ ...prev, current: page }))}
+                renderActions={(record) => (
+                    <div className="flex gap-2 justify-end">
+                        {actions.map((action, idx) => (
+                            <button
+                                key={idx}
+                                onClick={() => action.onClick(record)}
+                                title={action.tooltip}
+                                className={`p-1 rounded hover:bg-gray-100 ${action.danger ? 'text-red-500' : 'text-blue-500'}`}
+                            >
+                                {action.icon}
+                            </button>
+                        ))}
+                    </div>
+                )}
             />
 
             <Modal
@@ -277,11 +302,14 @@ const HRJobManagement = () => {
                     </Form.Item>
 
                     <Form.Item name="skills" label="Kỹ năng yêu cầu">
-                        <Select mode="multiple" placeholder="Chọn kỹ năng">
-                            {skills.map(s => (
-                                <Option key={s.id} value={s.id}>{s.name}</Option>
-                            ))}
-                        </Select>
+                        <Select
+                            mode="multiple"
+                            placeholder="Chọn kỹ năng"
+                            showSearch
+                            optionFilterProp="label"
+                            maxTagCount="responsive"
+                            options={skills.map(s => ({ label: s.name, value: s.id }))}
+                        />
                     </Form.Item>
 
                     <Form.Item name="dateRange" label="Thời gian tuyển dụng">

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Card, Row, Col, Statistic, Spin, Alert } from 'antd';
+import { Card, Row, Col, Statistic, Spin, Alert, Progress } from 'antd';
 import { FileTextOutlined, AuditOutlined, CheckCircleOutlined, ClockCircleOutlined } from '@ant-design/icons';
 import axios from '../../api/axiosClient';
 import { ENDPOINTS } from '../../api/endpoints';
@@ -110,13 +110,71 @@ const HRDashboard = () => {
                 </Col>
             </Row>
 
-            <Card className="mt-6">
-                <h2 className="text-lg font-semibold mb-4">Chào mừng đến với HR Portal</h2>
-                <p className="text-gray-600">
-                    Sử dụng menu bên trái để quản lý tin tuyển dụng, xem và xử lý hồ sơ ứng viên,
-                    hoặc cập nhật thông tin công ty của bạn.
-                </p>
-            </Card>
+            <Row gutter={[16, 16]} className="mt-6">
+                <Col xs={24} md={12}>
+                    <Card title="Tỉ lệ xử lý hồ sơ" className="h-full">
+                        <div className="flex flex-col items-center justify-center p-4">
+                            <Progress
+                                type="dashboard"
+                                percent={stats.totalResumes > 0 ? Math.round((stats.approvedResumes / stats.totalResumes) * 100) : 0}
+                                strokeColor={{
+                                    '0%': '#108ee9',
+                                    '100%': '#87d068',
+                                }}
+                                width={200}
+                            />
+                            <div className="mt-4 text-center">
+                                <p className="text-gray-500 mb-2">Tỉ lệ hồ sơ đã được duyệt</p>
+                                <div className="flex justify-center gap-4 text-sm">
+                                    <div className="flex items-center gap-2">
+                                        <div className="w-3 h-3 rounded-full bg-[#87d068]"></div>
+                                        <span>Đã duyệt ({stats.approvedResumes})</span>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <div className="w-3 h-3 rounded-full bg-[#faad14]"></div>
+                                        <span>Chờ xử lý ({stats.pendingResumes})</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </Card>
+                </Col>
+                <Col xs={24} md={12}>
+                    <Card title="Trạng thái tuyển dụng" className="h-full">
+                        <div className="space-y-6">
+                            <div>
+                                <div className="flex justify-between mb-1">
+                                    <span className="text-gray-600">Hồ sơ chờ xử lý</span>
+                                    <span className="font-medium text-[#faad14]">{stats.pendingResumes} / {stats.totalResumes}</span>
+                                </div>
+                                <Progress
+                                    percent={stats.totalResumes > 0 ? Math.round((stats.pendingResumes / stats.totalResumes) * 100) : 0}
+                                    status="active"
+                                    strokeColor="#faad14"
+                                />
+                            </div>
+                            <div>
+                                <div className="flex justify-between mb-1">
+                                    <span className="text-gray-600">Hồ sơ đã duyệt</span>
+                                    <span className="font-medium text-[#52c41a]">{stats.approvedResumes} / {stats.totalResumes}</span>
+                                </div>
+                                <Progress
+                                    percent={stats.totalResumes > 0 ? Math.round((stats.approvedResumes / stats.totalResumes) * 100) : 0}
+                                    status="success"
+                                />
+                            </div>
+                            <div className="pt-4 border-t border-gray-100">
+                                <h3 className="text-sm font-medium text-gray-800 mb-2">Hướng dẫn chung</h3>
+                                <ul className="text-sm text-gray-500 list-disc pl-5 space-y-1">
+                                    <li>Sử dụng menu <strong>Tin tuyển dụng</strong> để quản lý các tin đăng.</li>
+                                    <li>Mục <strong>Quản lý Ứng viên</strong> giúp bạn theo dõi các hồ sơ apply.</li>
+                                    <li>Luôn cập nhật <strong>Thông tin Công ty</strong> để thu hút ứng viên.</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </Card>
+                </Col>
+            </Row>
         </div>
     );
 };

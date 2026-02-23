@@ -16,6 +16,7 @@ import AdminDashboard from './pages/admin/AdminDashboard';
 import UserManagement from './pages/admin/UserManagement';
 import CompanyManagement from './pages/admin/CompanyManagement';
 import JobManagement from './pages/admin/JobManagement';
+import ResumeManagement from './pages/admin/ResumeManagement';
 import ProfilePage from './pages/profile/ProfilePage';
 import ProtectedRoute from './routes/ProtectedRoute';
 import RegisterCompanyPage from './pages/hr/RegisterCompanyPage';
@@ -28,7 +29,7 @@ import HRPricing from './pages/hr/HRPricing';
 import PaymentSuccess from './pages/hr/PaymentSuccess';
 import CandidateDashboard from './pages/candidate/CandidateDashboard';
 import MyApplicationsPage from './pages/candidate/MyApplicationsPage';
-import SavedJobsPage from './pages/candidate/SavedJobsPage';
+
 import CandidateProfilePage from './pages/candidate/CandidateProfilePage';
 
 
@@ -84,7 +85,7 @@ function App() {
       }>
         <Route index element={<CandidateDashboard />} />
         <Route path="applications" element={<MyApplicationsPage />} />
-        <Route path="saved-jobs" element={<SavedJobsPage />} />
+
         <Route path="profile" element={<CandidateProfilePage />} />
       </Route>
 
@@ -99,7 +100,7 @@ function App() {
         <Route path="companies" element={<CompanyManagement />} />
         <Route path="company-approvals" element={<CompanyApprovalsPage />} />
         <Route path="jobs" element={<JobManagement />} />
-        <Route path="resumes" element={<div className="p-8">Quản lý CV (Pending)</div>} />
+        <Route path="resumes" element={<ResumeManagement />} />
       </Route>
 
       <Route path="*" element={<div className="text-center mt-20 text-xl font-bold text-gray-400">404 Not Found</div>} />

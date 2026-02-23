@@ -2,7 +2,7 @@ import axios from 'axios';
 import { ENDPOINTS } from './endpoints';
 
 const axiosClient = axios.create({
-    baseURL: import.meta.env.VITE_API_URL,
+    baseURL: import.meta.env.VITE_API_URL || 'http://127.0.0.1:8080/api/v1',
     withCredentials: true, // Important for cookies (refresh token)
     headers: {
         'Content-Type': 'application/json',
